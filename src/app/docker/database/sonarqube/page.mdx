@@ -1,0 +1,102 @@
+---
+title: "SonarQube"
+description: "Set up SonarQube and PostgreSQL using Docker Compose with environment variables, healthchecks, and persistent volumes."
+---
+
+# SonarQube with Docker
+
+This guide explains how to deploy **SonarQube** using Docker Compose, along with a **PostgreSQL database** for persistence.
+We’ll use **Bitnami Docker images**, which come pre-configured and production-ready.
+
+
+## Why SonarQube?
+
+SonarQube is a powerful tool for:
+
+- **Static code analysis**
+- **Continuous inspection of code quality**
+- **Detecting bugs, vulnerabilities, and code smells**
+- **Integrating with CI/CD pipelines** (GitHub Actions, Jenkins, GitLab CI, etc.)
+
+
+## Docker Compose Setup
+
+Below is the complete **docker-compose.yml** file to spin up both **PostgreSQL** and **SonarQube**:
+
+```yaml filename="docker-compose.yml"
+version: "3.9"
+
+services:
+  postgresql:
+    image: docker.io/bitnami/postgresql:latest
+    container_name: postgresql_container
+    restart: unless-stopped
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=no
+      - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
+      - POSTGRESQL_DATABASE=${POSTGRESQL_DATABASE}
+      - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+    volumes:
+      - ./docker/postgresql_data:/bitnami/postgresql
+    networks:
+      - sonarnet
+
+  sonarqube:
+    image: docker.io/bitnami/sonarqube:25
+    container_name: sonarqube_container
+    restart: unless-stopped
+    depends_on:
+      - postgresql
+    ports:
+      - "9000:9000" # SonarQube UI
+      - "9001:9001" # ElasticSearch internal (optional, can remove)
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=no
+      - SONARQUBE_USERNAME=${SONARQUBE_USERNAME}
+      - SONARQUBE_PASSWORD=${SONARQUBE_PASSWORD}
+      - SONARQUBE_DATABASE_HOST=postgresql
+      - SONARQUBE_DATABASE_PORT_NUMBER=5432
+      - SONARQUBE_DATABASE_USER=${POSTGRESQL_USERNAME}
+      - SONARQUBE_DATABASE_PASSWORD=${POSTGRESQL_PASSWORD}
+      - SONARQUBE_DATABASE_NAME=${POSTGRESQL_DATABASE}
+      - SONARQUBE_ELASTICSEARCH_PORT_NUMBER=9001
+    healthcheck:
+        test: ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    volumes:
+      - ./docker/sonarqube_data:/bitnami/sonarqube
+    networks:
+      - sonarnet
+
+volumes:
+  postgresql_data:
+    driver: local
+  sonarqube_data:
+    driver: local
+
+networks:
+  sonarnet:
+    driver: bridge
+
+```
+### Configuration file
+
+```dotenv filename=".env"
+# PostgreSQL Database Config
+POSTGRESQL_USERNAME=bn_sonarqube
+POSTGRESQL_PASSWORD=bitnami
+POSTGRESQL_DATABASE=bitnami_sonarqube
+
+# SonarQube Admin Credentials
+SONARQUBE_USERNAME=admin
+SONARQUBE_PASSWORD=bitnami@2023
+```
+
+### Run Docker Compose:
+```bash
+$ docker compose up -d
+```

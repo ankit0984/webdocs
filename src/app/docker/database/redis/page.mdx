@@ -1,0 +1,50 @@
+---
+title: Redis
+---
+&nbsp;
+
+# Bitnami Redis Setup with Docker Compose
+
+This guide demonstrates how to run **Bitnami Redis** using Docker Compose.
+The Bitnami image is production-ready, secure by default, and easy to configure.
+
+## Why use bitnami Redis?:
+Bitnami provides pre-packaged and well-maintained container images that are widely trusted in the industry.
+Here are some key advantages of using the Bitnami Redis Docker image over other Redis images:
+
+1. Production-Ready – Bitnami’s images are hardened for security and optimized for performance.
+2. Regular Updates – Images are frequently updated to include security patches and the latest versions of Redis.
+3. Environment Variable Configuration – Supports easy configuration of root user, database creation, and user credentials via environment variables.
+4. Cross-Platform Compatibility – Works seamlessly across Linux, macOS, and Windows environments.
+5. Data Persistence – Comes preconfigured with volume mounting for persistent storage of Redis data.
+6. Community & Enterprise Support – Backed by VMware and trusted in enterprise-grade environments.
+7. Lightweight & Secure – Optimized with minimal vulnerabilities compared to unofficial images.
+
+## Container file
+`docker.compose.yml` file for creating Redis docker image
+
+```yaml filename="docker.compose.yaml"
+version: "3.0.1"
+
+services:
+  redis:
+    container_name: redis
+    image: "docker.io/bitnami/redis:latest"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    restart: always
+    ports:
+      - "6379:6379"
+```
+### Configuration file
+create .env file for setting variables
+
+```dotenv filename=".env"
+REDIS_PASSWORD=secretpassword
+```
+### Run Docker Compose:
+```bash
+$ docker compose up -d
+```

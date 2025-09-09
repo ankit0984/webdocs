@@ -1,0 +1,67 @@
+---
+title: MongoDB & Redis Setup
+description: Run MongoDB and Redis with Docker Compose using environment variables and persistent storage.
+---
+
+&nbsp;
+
+# MongoDB & Redis with Docker Compose
+
+This guide demonstrates how to run **MongoDB** and **Redis** together using `docker-compose`.
+We will configure persistent volumes, environment variables, authentication, and a custom Docker network for service-to-service communication.
+
+---
+
+## Docker Compose Configuration
+
+Below is the `docker-compose.yml` file that defines both **MongoDB** and **Redis** services.
+
+```yaml filename="docker-compose.yml"
+version: "3.0.1"
+
+services:
+  pymongo:
+    image: mongo:latest
+    container_name: pymongo_container
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    ports:
+      - 27017:27017
+    volumes:
+      - ./docker/mongodb_data:/data/db
+      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    restart: always
+    command: mongod --auth
+    networks:
+      - custom_network
+
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    ports:
+      - 6379:6379
+    volumes:
+      - ./docker/redis_data:/data
+    restart: always
+    networks:
+      - custom_network
+
+networks:
+  custom_network:
+    driver: bridge
+```
+
+### Configuration file
+create .env file for setting variables
+
+```dotenv filename=".env"
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=secretpassword
+MONGO_INITDB_DATABASE=devuser
+```
+### Run Docker Compose:
+```bash
+$ docker compose up -d
+```

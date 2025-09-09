@@ -1,0 +1,80 @@
+&nbsp;
+
+# Next.js Docker Setup Guide
+
+This guide explains how to containerize your Next.js application using Docker.
+We’ll start with a simple single-stage Dockerfile (easy to use, but heavier).
+For production, you should prefer **multi-stage builds** with `output: "standalone"` to keep the image lean.
+
+---
+
+## Quick Start
+
+1. Copy the `Dockerfile` to your project root.
+2. Update your `next.config.js` (for standalone output if using multi-stage).
+3. Build and run the Docker container.
+
+---
+
+## Configuration Files
+
+### Dockerfile (Simple Example)
+
+This is the simplest single-stage Dockerfile. Suitable for development or small projects:
+
+```dockerfile filename="dockerfile"
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy all project files
+COPY . .
+
+# Build the Next.js app
+RUN npm run build
+
+# Expose the app port
+EXPOSE 3000
+
+# Run the Next.js app
+CMD ["npm", "run", "start"]
+```
+
+### Next.js Configuration
+
+Update your `next.config.js` to enable standalone output:
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: "standalone"
+};
+
+export default nextConfig;
+```
+
+## Build and Run
+
+### Building the Docker Image
+
+```bash
+# Build the image
+$ docker build -t nextjs-app .
+
+# Check the image size
+$ docker images | grep nextjs-app
+```
+
+### Running the Container
+
+```bash
+# Run in detach mode
+$ docker run -d -p 3000:3000 nextjs-app
+```

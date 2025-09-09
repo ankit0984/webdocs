@@ -1,0 +1,48 @@
+---
+title: Node.js Installation Script
+---
+&nbsp;
+
+## Node.js Installation Script (Linux with NVM)
+
+Instead of copy-pasting commands one by one, you can save the following script as `install-node.sh` and run it directly.
+
+
+```bash filename="install-node.sh"
+#!/usr/bin/env bash
+
+# Exit on error
+set -e
+
+echo "📥 Installing NVM..."
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+echo "🔄 Loading NVM..."
+\. "$HOME/.nvm/nvm.sh"
+
+echo "📦 Installing Node.js v22..."
+nvm install 22
+
+echo "✅ Verifying installation..."
+echo "Node.js version: $(node -v)"
+echo "NVM current: $(nvm current)"
+echo "npm version: $(npm -v)"
+
+echo "installing yarn"
+# Download and install Yarn:
+corepack enable yarn
+# Verify Yarn version:
+yarn -v
+
+echo "🎉 Installation complete!"
+```
+
+## ▶️ How to Use
+ 1. Save the script above as install-node.sh.
+ 2. Give it execution permission:
+```bash
+chmod +x install-node.sh
+```
+
+## Install yarn
+* If `corepack enable yarn` fails then try `sudo npm i -g yarn` or `sudo apt install yarn`
